@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Productos - Gotitas Café</title>
+    <style>
+        body {
+            background-color: #ffe6f0;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 30px;
+            color: #333;
+        }
+
+        h1, h2 {
+            color: #b30059;
+        }
+
+        .formulario {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+
+        input {
+            padding: 10px;
+            margin: 8px 0;
+            width: 95%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            display: block;
+        }
+
+        button {
+            background-color: #ff66b2;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin-top: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #e60073;
+        }
+
+        .producto {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .producto strong {
+            color: #cc0066;
+        }
+    </style>
+</head>
+<body>
+    <h1>💖 Productos de Gotitas Café</h1>
+
+    <div class="formulario">
+        <h2>Agregar nuevo producto</h2>
+        <input type="text" id="nombre" placeholder="Nombre del producto">
+        <input type="number" id="precio" placeholder="Precio">
+        <input type="text" id="descripcion" placeholder="Descripción">
+        <button onclick="agregarProducto()">Guardar</button>
+    </div>
+
+    <h2>Lista de productos</h2>
+    <div id="lista-productos"></div>
+
+    <script>
+        async function cargarProductos() {
+            const response = await fetch('/productos/');
+            const productos = await response.json();
+
+            const lista = document.getElementById('lista-productos');
+            lista.innerHTML = '';
+
+            productos.forEach((producto, index) => {
+                const div = document.createElement('div');
+                div.className = 'producto';
+                div.innerHTML = `
+                    <strong>${producto.nombre}</strong><br>
+                    Precio: $${producto.precio}<br>
+                    ${producto.descripcion}<br>
+                    <button onclick="eliminarProducto(${index})">Eliminar</button>
+                `;
+                lista.appendChild(div);
+            });
+        }
+
+        async function agregarProducto() {
+            const nombre = document.getElementById('nombre').value;
+            const precio = parseFloat(document.getElementById('precio').value);
+            const descripcion = document.getElementById('descripcion').value;
+
+            const producto = { nombre, precio, descripcion };
+
+            const response = await fetch('/productos/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(producto)
+            });
+
+            if (response.ok) {
+                alert('Producto agregado correctamente');
+                document.getElementById('nombre').value = '';
+                document.getElementById('precio').value = '';
+                document.getElementById('descripcion').value = '';
+                cargarProductos();
+            } else {
+                alert('Error al agregar producto');
+            }
+        }
+
+        async function eliminarProducto(id) {
+            const response = await fetch(`/productos/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert('Producto eliminado');
+                cargarProductos();
+            } else {
+                alert('Error al eliminar producto');
+            }
+        }
+
+        cargarProductos();
+    </script>
+</body>
+</html>
